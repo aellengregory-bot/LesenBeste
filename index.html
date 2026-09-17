@@ -67,14 +67,13 @@ de:{points:"Meine Punkte",search:"Suchen",profile:"Profil",settings:"Einstellung
 let lang=(navigator.language||"fr").toLowerCase().startsWith("de")?"de":"fr";
 document.querySelectorAll("[data-t]").forEach(x=>x.textContent=T[lang][x.dataset.t]);
 document.querySelectorAll("[data-ph]").forEach(x=>x.placeholder=T[lang][x.dataset.ph]);
-
 let users=JSON.parse(localStorage.getItem("lb_users")||"{}");
 let books=JSON.parse(localStorage.getItem("lb_books")||"[]");
 let current=null, selectedBook=null, qi=0, quizEarned=0, selectedAnswer=null;
 for(let i=3;i<=100;i++){let o=document.createElement("option");o.value=i;o.textContent=i;$("age").appendChild(o)}
 
 function save(){localStorage.setItem("lb_users",JSON.stringify(users));localStorage.setItem("lb_books",JSON.stringify(books))}
-function isAdmin(){return current && current.toLowerCase()==="admin"} // change "admin" later to your private username
+function isAdmin(){return current && current.toLowerCase()==="liamaellen1a"} // change "admin" later to your private username
 function enter(){
  $("auth").classList.add("hidden");$("top").classList.remove("hidden");
  $("adminNav").classList.toggle("hidden",!isAdmin());go("points");refresh();
