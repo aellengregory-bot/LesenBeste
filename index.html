@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LesenBeste</title>
+<style>
+:root{--p:#6d4aff;--bg:#f5f4fb;--card:#fff;--text:#1d1b27;--muted:#777382;--green:#22a55b;--red:#e24b4b}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font:inherit}.hidden{display:none!important}.top{height:64px;background:var(--p);color:white;display:flex;align-items:center;gap:14px;padding:0 18px;position:sticky;top:0;z-index:10}
+.brand{font-weight:900;font-size:22px}.hamb{border:0;background:transparent;color:white;font-size:28px;padding:3px}.page{max-width:820px;margin:auto;padding:22px}
+.card{background:var(--card);border-radius:22px;padding:22px;box-shadow:0 8px 28px #2c245510;margin-bottom:16px}
+h1,h2,h3{margin-top:4px}.field{margin:12px 0}.field label{display:block;font-weight:750;margin-bottom:6px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #d8d5e2;border-radius:12px;background:white}textarea{min-height:82px;resize:vertical}
+.btn{border:0;border-radius:13px;padding:13px 16px;background:var(--p);color:white;font-weight:850;cursor:pointer}.btn.green{background:var(--green)}.btn.gray{background:#302d38}.btn.red{background:var(--red)}.btn.small{padding:8px 11px;width:auto}
+.full{width:100%}.muted{color:var(--muted)}.center{text-align:center}.points{font-size:60px;font-weight:950;color:var(--p)}
+.drawer{position:fixed;inset:64px auto 0 0;width:min(320px,88vw);background:#fff;z-index:20;box-shadow:10px 0 30px #0002;padding:18px;transform:translateX(-105%);transition:.2s}.drawer.open{transform:none}
+.drawer button{width:100%;text-align:left;border:0;background:transparent;padding:15px;border-radius:12px;font-weight:800}.drawer button:hover{background:#f0edff}
+.book{display:flex;gap:15px;align-items:center;border:1px solid #e5e2ed;border-radius:16px;padding:12px;margin:10px 0;cursor:pointer}.cover{width:72px;height:94px;object-fit:cover;border-radius:9px;background:#eee}
+.stars button{border:0;background:transparent;font-size:34px;color:#c9c5d1;padding:2px}.stars button.on{color:#ffc928}
+.answer{display:flex;gap:11px;align-items:center;padding:14px;border:1px solid #ddd9e6;border-radius:13px;margin:9px 0;cursor:pointer}.radio{width:23px;height:23px;border:2px solid #9a95a7;border-radius:50%;display:grid;place-items:center;font-weight:900}.answer.selected .radio:after{content:"×";font-size:23px;line-height:15px}.answer.selected{border-color:var(--p);background:#f2efff}
+.feedback{font-size:22px;font-weight:900;text-align:center;padding:20px}.cat{font-size:70px}
+.qadmin{border-top:1px solid #eee;padding-top:15px;margin-top:15px}.pill{display:inline-block;background:#eeeafc;border-radius:999px;padding:6px 10px;font-size:13px;font-weight:800}
+.logo{font-size:70px}.auth{max-width:500px;margin:45px auto}.row{display:flex;gap:10px}.row>*{flex:1}
+@media(max-width:600px){.row{display:block}.page{padding:14px}.card{padding:17px}}
+</style>
+</head>
+<body>
+<div id="top" class="top hidden"><button class="hamb" id="hamb">☰</button><div class="brand">📚 LesenBeste</div></div>
+<aside id="drawer" class="drawer">
+<button data-go="points">⭐ <span data-t="points">Mes Points</span></button>
+<button data-go="search">🔎 <span data-t="search">Rechercher</span></button>
+<button data-go="profile">👤 <span data-t="profile">Profil</span></button>
+<button data-go="settings">⚙️ <span data-t="settings">Paramètres</span></button>
+<button id="adminNav" class="hidden">🛠️ Developer Admin</button>
+<button id="logout">🚪 <span data-t="logout">Déconnexion</span></button>
+</aside>
+
+<main class="page">
+<section id="auth" class="card auth">
+<div class="center logo">📚</div><h1 class="center">LesenBeste</h1>
+<div class="field"><label data-t="username">Nom d’utilisateur</label><input id="u"></div>
+<div class="field"><label data-t="password">Mot de passe</label><input id="pw" type="password"></div>
+<div class="row"><button class="btn" id="login" data-t="login">Se connecter</button><button class="btn gray" id="signup" data-t="signup">S’inscrire</button></div>
+<p id="authMsg" class="center muted"></p>
+</section>
+
+<section id="points" class="view hidden"><div class="card center"><h1 data-t="points">Mes Points</h1><div id="pointNum" class="points">0</div><div style="font-size:35px">⭐</div><p class="muted" data-t="readmsg">Lis des livres et réussis des quiz pour gagner des points !</p></div></section>
+<section id="search" class="view hidden"><div class="card"><h1 data-t="search">Rechercher</h1><input id="searchBox" data-ph="searchph" placeholder="Rechercher un livre..."><div id="bookList"></div></div></section>
+<section id="profile" class="view hidden"><div class="card"><h1 data-t="profile">Profil</h1><p><b data-t="username">Nom d’utilisateur</b> : <span id="profileName"></span></p><p><b data-t="age">Âge</b> : <span id="profileAge"></span></p></div></section>
+<section id="settings" class="view hidden"><div class="card"><h1 data-t="settings">Paramètres</h1><div class="field"><label data-t="newpw">Changer le mot de passe</label><input id="newPw" type="password"></div><button id="savePw" class="btn" data-t="save">Enregistrer</button><div class="field"><label data-t="age">Âge</label><select id="age"></select></div><button id="saveAge" class="btn" data-t="save">Enregistrer</button><p id="settingsMsg" class="muted"></p></div></section>
+<section id="bookDetail" class="view hidden"><div class="card center"><img id="detailImg" class="cover" style="width:150px;height:200px"><h1 id="detailName"></h1><button id="rateQuiz" class="btn green" data-t="start">Commencer</button><div id="rating" class="hidden"><h3 data-t="rate">Comment as-tu trouvé ce quiz ?</h3><div id="stars" class="stars"></div><button id="beginQuiz" class="btn green full" data-t="continue">Continuer</button></div></div></section>
+<section id="quiz" class="view hidden"><div class="card"><span id="qCount" class="pill"></span><h2 id="qText"></h2><div id="answers"></div><button id="nextQ" class="btn full" data-t="continue">Continuer</button><div id="feedback" class="hidden feedback"></div></div></section>
+<section id="finish" class="view hidden"><div class="card center"><div class="cat">😺🎉</div><h1 data-t="bravo">Bravo !</h1><h2><span data-t="earned">Tu as gagné</span> <span id="earned"></span> ⭐</h2><button class="btn" onclick="go('points')" data-t="points">Mes Points</button></div></section>
+
+<section id="admin" class="view hidden"><div class="card"><h1>🛠️ Developer Admin</h1><p class="muted">Cette page n’apparaît que pour le compte développeur.</p>
+<div class="field"><label>Nom du livre</label><input id="bookName"></div>
+<div class="field"><label>Image du livre (URL)</label><input id="bookImg" placeholder="https://..."></div>
+<h2>Quiz</h2><div id="adminQs"></div><button id="addQ" class="btn gray full">+ Ajouter une question</button><br><br><button id="publish" class="btn green full">Publier le livre</button><p id="adminMsg"></p></div></section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const T={
+fr:{points:"Mes Points",search:"Rechercher",profile:"Profil",settings:"Paramètres",logout:"Déconnexion",username:"Nom d’utilisateur",password:"Mot de passe",login:"Se connecter",signup:"S’inscrire",readmsg:"Lis des livres et réussis des quiz pour gagner des points !",searchph:"Rechercher un livre...",age:"Âge",newpw:"Changer le mot de passe",save:"Enregistrer",start:"Commencer",rate:"Comment as-tu trouvé ce quiz ?",continue:"Continuer",bravo:"Bravo !",earned:"Tu as gagné"},
+de:{points:"Meine Punkte",search:"Suchen",profile:"Profil",settings:"Einstellungen",logout:"Abmelden",username:"Benutzername",password:"Passwort",login:"Anmelden",signup:"Registrieren",readmsg:"Lies Bücher und löse Quizfragen, um Punkte zu sammeln!",searchph:"Ein Buch suchen...",age:"Alter",newpw:"Passwort ändern",save:"Speichern",start:"Starten",rate:"Wie fandest du dieses Quiz?",continue:"Weiter",bravo:"Bravo!",earned:"Du hast gewonnen"}
+};
+let lang=(navigator.language||"fr").toLowerCase().startsWith("de")?"de":"fr";
+document.querySelectorAll("[data-t]").forEach(x=>x.textContent=T[lang][x.dataset.t]);
+document.querySelectorAll("[data-ph]").forEach(x=>x.placeholder=T[lang][x.dataset.ph]);
+
+let users=JSON.parse(localStorage.getItem("lb_users")||"{}");
+let books=JSON.parse(localStorage.getItem("lb_books")||"[]");
+let current=null, selectedBook=null, qi=0, quizEarned=0, selectedAnswer=null;
+for(let i=3;i<=100;i++){let o=document.createElement("option");o.value=i;o.textContent=i;$("age").appendChild(o)}
+
+function save(){localStorage.setItem("lb_users",JSON.stringify(users));localStorage.setItem("lb_books",JSON.stringify(books))}
+function isAdmin(){return current && current.toLowerCase()==="admin"} // change "admin" later to your private username
+function enter(){
+ $("auth").classList.add("hidden");$("top").classList.remove("hidden");
+ $("adminNav").classList.toggle("hidden",!isAdmin());go("points");refresh();
+}
+$("signup").onclick=()=>{
+ let u=$("u").value.trim(),p=$("pw").value;
+ if(!u||!p){$("authMsg").textContent="Remplis les deux cases 🙂";return}
+ if(users[u]){$("authMsg").textContent="Ce nom existe déjà.";return}
+ users[u]={password:p,age:9,points:0};save();current=u;enter()
+};
+$("login").onclick=()=>{
+ let u=$("u").value.trim(),p=$("pw").value;
+ if(!users[u]||users[u].password!==p){$("authMsg").textContent=lang==="de"?"Benutzername oder Passwort falsch.":"Nom d’utilisateur ou mot de passe incorrect.";return}
+ current=u;enter()
+};
+$("hamb").onclick=()=>$("drawer").classList.toggle("open");
+document.querySelectorAll("#drawer [data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+$("adminNav").onclick=()=>go("admin");
+$("logout").onclick=()=>{current=null;$("drawer").classList.remove("open");$("top").classList.add("hidden");document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$("auth").classList.remove("hidden");$("pw").value=""};
+function go(id){document.querySelectorAll(".view").forEach(v=>v.classList.add("hidden"));$(id).classList.remove("hidden");$("drawer").classList.remove("open");if(id==="search")renderBooks();if(id==="admin"&&$("adminQs").children.length===0)for(let i=0;i<5;i++)addAdminQ()}
+function refresh(){if(!current)return;$("pointNum").textContent=users[current].points||0;$("profileName").textContent=current;$("profileAge").textContent=users[current].age||9;$("age").value=users[current].age||9}
+$("saveAge").onclick=()=>{users[current].age=+$("age").value;save();refresh();$("settingsMsg").textContent="✓"};
+$("savePw").onclick=()=>{if($("newPw").value){users[current].password=$("newPw").value;save();$("newPw").value="";$("settingsMsg").textContent="✓"}};
+$("searchBox").oninput=renderBooks;
+function renderBooks(){
+ let q=$("searchBox").value.toLowerCase(),box=$("bookList");box.innerHTML="";
+ books.filter(b=>b.name.toLowerCase().includes(q)).forEach((b,i)=>{
+  let d=document.createElement("div");d.className="book";
+  d.innerHTML=`<img class="cover" src="${esc(b.img)}" onerror="this.style.visibility='hidden'"><div><b>${esc(b.name)}</b><br><span class="muted">${b.questions.length} questions</span></div>`;
+  d.onclick=()=>openBook(b);box.appendChild(d)
+ });
+ if(!box.children.length)box.innerHTML='<p class="muted">Aucun livre trouvé.</p>'
+}
+function openBook(b){selectedBook=b;$("detailName").textContent=b.name;$("detailImg").src=b.img;$("rating").classList.add("hidden");go("bookDetail")}
+$("rateQuiz").onclick=()=>{$("rating").classList.remove("hidden");renderStars(0)};
+function renderStars(n){$("stars").innerHTML="";for(let i=1;i<=4;i++){let s=document.createElement("button");s.textContent="★";if(i<=n)s.className="on";s.onclick=()=>renderStars(i);$("stars").appendChild(s)}}
+$("beginQuiz").onclick=()=>{qi=0;quizEarned=0;showQuestion()};
+function showQuestion(){
+ go("quiz");selectedAnswer=null;$("feedback").classList.add("hidden");$("nextQ").disabled=false;
+ let q=selectedBook.questions[qi];$("qCount").textContent=(qi+1)+" / "+selectedBook.questions.length;$("qText").textContent=q.text;$("answers").innerHTML="";
+ q.answers.forEach((a,i)=>{let d=document.createElement("div");d.className="answer";d.innerHTML=`<div class="radio"></div><div>${esc(a)}</div>`;d.onclick=()=>{document.querySelectorAll(".answer").forEach(x=>x.classList.remove("selected"));d.classList.add("selected");selectedAnswer=i};$("answers").appendChild(d)})
+}
+$("nextQ").onclick=()=>{
+ if(selectedAnswer===null)return;
+ let q=selectedBook.questions[qi],ok=selectedAnswer===q.correct,f=$("feedback");f.classList.remove("hidden");
+ if(ok){quizEarned+=q.points;f.innerHTML=`<div class="cat">😸✅</div>${lang==="de"?"Richtig, bravo!":"Vrai, bravo !"} +${q.points} ⭐`}
+ else f.innerHTML=`<div class="cat">😿</div>${lang==="de"?"Schade!":"Dommage !"}`
+ $("nextQ").disabled=true;
+ setTimeout(()=>{qi++;if(qi<selectedBook.questions.length)showQuestion();else{users[current].points=(users[current].points||0)+quizEarned;save();refresh();$("earned").textContent=quizEarned;go("finish")}},900)
+};
+function addAdminQ(){
+ let n=$("adminQs").children.length+1,d=document.createElement("div");d.className="qadmin";
+ d.innerHTML=`<h3>Question ${n}</h3><input class="qt" placeholder="Question"><input class="qa" placeholder="Réponse 1"><input class="qa" placeholder="Réponse 2"><input class="qa" placeholder="Réponse 3"><div class="row"><div class="field"><label>Bonne réponse</label><select class="qc"><option value="0">Réponse 1</option><option value="1">Réponse 2</option><option value="2">Réponse 3</option></select></div><div class="field"><label>Points</label><input class="qp" type="number" min="0" value="2"></div></div>`;
+ $("adminQs").appendChild(d)
+}
+$("addQ").onclick=addAdminQ;
+$("publish").onclick=()=>{
+ if(!isAdmin())return;
+ let name=$("bookName").value.trim(),img=$("bookImg").value.trim(),qs=[];
+ document.querySelectorAll(".qadmin").forEach(d=>{let ans=[...d.querySelectorAll(".qa")].map(x=>x.value.trim());qs.push({text:d.querySelector(".qt").value.trim(),answers:ans,correct:+d.querySelector(".qc").value,points:Math.max(0,+d.querySelector(".qp").value||0)})});
+ if(!name||qs.length<5||qs.some(q=>!q.text||q.answers.some(a=>!a))){$("adminMsg").textContent="⚠️ Nom + minimum 5 questions complètes.";return}
+ books.push({name,img,questions:qs});save();$("adminMsg").textContent="✅ Livre publié !";$("bookName").value="";$("bookImg").value="";$("adminQs").innerHTML="";for(let i=0;i<5;i++)addAdminQ()
+};
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+</script>
+</body></html>
